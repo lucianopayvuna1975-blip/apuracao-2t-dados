@@ -141,7 +141,11 @@ footer b{color:var(--ink)}
   <div class="proj" id="projCard" style="display:none">
     <span class="tag">PROJEÇÃO · ESTIMATIVA NÃO OFICIAL</span>
     <div id="projBody" style="font-size:14px"></div>
-    <div class="note">Estimativa preliminar calculada sobre os votos já apurados. Não é dado oficial do TSE e pode variar até a totalização.</div>
+    <div style="overflow-x:auto;margin-top:12px"><table id="msTable">
+      <thead><tr><th>Apuração em</th><th>Flavio proj.</th><th>Lula proj.</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <div class="note">A cada 10% da apuração, registra-se aqui a projeção do resultado final mantido o ritmo daquele momento. Estimativa preliminar — não é dado oficial do TSE e pode variar até a totalização.</div>
   </div>
 
   <footer>
@@ -250,13 +254,22 @@ function renderComp(uf2){
     tb.appendChild(tr);
   }
 }
-function renderProj(p){
+function renderProj(p,ms){
   const card=$("projCard");
   if(lastMode!=="live"||p.sec<1){card.style.display="none";return;}
   card.style.display="block";
   const k=100/Math.max(p.sec,0.01);
   $("projBody").innerHTML=
-    `Mantido o ritmo atual da apuração (${pf(p.sec)}% das seções), a estimativa é de <b style="color:#1d4ed8">${pf(p.f.p)}% para Flavio Bolsonaro</b> (~${nf.format(Math.round(p.f.vap*k))} votos) e <b style="color:#dc2626">${pf(p.l.p)}% para Lula</b> (~${nf.format(Math.round(p.l.vap*k))} votos).`;
+    `Com <b>${pf(p.sec)}%</b> das seções apuradas, mantido o ritmo atual a projeção para o resultado final é de <b style="color:#1d4ed8">${pf(p.f.p)}% para Flavio Bolsonaro</b> (~${nf.format(Math.round(p.f.vap*k))} votos) e <b style="color:#dc2626">${pf(p.l.p)}% para Lula</b> (~${nf.format(Math.round(p.l.vap*k))} votos).`;
+  const tb=$("msTable").querySelector("tbody"); tb.innerHTML="";
+  const byM={}; (ms||[]).forEach(e=>{byM[e.milestone]=e;});
+  for(let m=10;m<=100;m+=10){
+    const e=byM[m], tr=document.createElement("tr");
+    tr.innerHTML=e
+      ? `<td><b>${m}%</b></td><td style="color:#1d4ed8;font-weight:700">${pf(e.fp)}%</td><td style="color:#dc2626;font-weight:700">${pf(e.lp)}%</td>`
+      : `<td><b>${m}%</b></td><td colspan="2" style="color:#94a3b8"><i>aguardando</i></td>`;
+    tb.appendChild(tr);
+  }
 }
 function setBadge(mode, st){
   lastMode=mode;
@@ -295,7 +308,7 @@ async function drawMap(){
 function showRef(){
   const n=REF1T.nat;
   renderCands({f:{vap:n.f[0],p:n.f[1],st:""},l:{vap:n.l[0],p:n.l[1],st:""},sec:n.sec,comp:n.comp[0],compP:n.comp[1],abs:n.abs[0],absP:n.abs[1],vv:n.vv,vb:n.vb,vn:n.vn});
-  renderUFs(REF1T.uf); renderComp(null); renderProj({sec:0});
+  renderUFs(REF1T.uf); renderComp(null); renderProj({sec:0},[]);
   setBadge("ref");
   setSync(`Referência: 1º turno totalizado em <b>${n.dt} às ${n.ht}</b> (Brasília)`);
 }
@@ -321,14 +334,15 @@ async function tick(){
     if(st.turno===2){
       const br=parseTSE(await fetch("dados/br.json?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();}));
       const ufs=await fetchUFs();
-      renderCands(br,true); renderUFs(ufs); renderComp(ufs); renderProj(br);
+      let ms=[]; try{ ms=await fetch("dados/milestones.json?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();}); }catch(e){}
+      renderCands(br,true); renderUFs(ufs); renderComp(ufs); renderProj(br,ms);
       setBadge("live",st);
       const agora=new Date().toLocaleString("pt-BR",{timeZone:"America/Sao_Paulo"});
       setSync(`Apuração do TSE de <b>${br.dt} às ${br.ht}</b> (Brasília) · página sincronizada às ${agora}`);
       lastGood={br,ufs};
     }else{ showRef(); }
   }catch(e){
-    if(lastGood){const{br,ufs}=lastGood;renderCands(br,true);renderUFs(ufs);renderComp(ufs);renderProj(br);setBadge("live");}
+    if(lastGood){const{br,ufs}=lastGood;renderCands(br,true);renderUFs(ufs);renderComp(ufs);renderProj(br,[]);setBadge("live");}
     else showRef();
     setSync($("syncLine").textContent+" · <i>(falha ao buscar dados novos — mantidos os últimos)</i>");
   }
