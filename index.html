@@ -115,6 +115,12 @@ footer b{color:var(--ink)}
   </div>
 
   <div class="card">
+  <div class="card">
+    <h2 class="sec">Mapa do Brasil — vencedor por estado no 1º turno</h2>
+    <div style="text-align:center" id="mapWrap"><span style="color:#94a3b8;font-size:13px">carregando mapa…</span></div>
+    <div class="leg"><span><i style="background:var(--blue)"></i>azul = Flavio venceu no 1º turno</span><span><i style="background:var(--red)"></i>vermelho = Lula venceu no 1º turno</span></div>
+  </div>
+
     <h2 class="sec">Resultado por estado</h2>
     <div style="overflow-x:auto"><table id="ufTable">
       <thead><tr><th>UF</th><th>Flavio %</th><th>Lula %</th><th>Seções %</th></tr></thead>
@@ -260,7 +266,32 @@ function setBadge(mode, st){
 }
 function setSync(txt){$("syncLine").innerHTML=txt;$("footSync").textContent=txt.replace(/<[^>]+>/g,"");}
 
+/* ===== mapa do Brasil (1º turno) ===== */
+async function drawMap(){
+  try{
+    const geo=await fetch("dados/brasil-ufs.json?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();});
+    let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+    for(const s of geo.states)for(const p of s.p)for(const r of p)for(const pt of r){
+      if(pt[0]<x0)x0=pt[0];if(pt[0]>x1)x1=pt[0];if(pt[1]<y0)y0=pt[1];if(pt[1]>y1)y1=pt[1];
+    }
+    const W=460,H=440,k=Math.min(W/(x1-x0),H/(y1-y0));
+    const ox=(W-(x1-x0)*k)/2,oy=(H-(y1-y0)*k)/2;
+    const P=(x,y)=>(ox+(x-x0)*k).toFixed(1)+","+(oy+(y1-y)*k).toFixed(1);
+    let svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:440px;height:auto" role="img" aria-label="Mapa do Brasil por vencedor do 1º turno">';
+    for(const s of geo.states){
+      const r1=REF1T.uf[s.s], blue=r1&&r1.f[1]>r1.l[1];
+      let d="";
+      for(const p of s.p)for(const r of p){d+="M"+r.map(pt=>P(pt[0],pt[1])).join("L")+"Z";}
+      svg+='<path d="'+d+'" fill="'+(blue?"#1d4ed8":"#dc2626")+'" fill-opacity="0.85" stroke="#ffffff" stroke-width="1.4"><title>'+s.s+'</title></path>';
+    }
+    document.getElementById("mapWrap").innerHTML=svg+"</svg>";
+  }catch(e){
+    document.getElementById("mapWrap").innerHTML='<span style="color:#94a3b8;font-size:13px">mapa indisponível no momento</span>';
+  }
+}
+
 /* ===== modos ===== */
+
 function showRef(){
   const n=REF1T.nat;
   renderCands({f:{vap:n.f[0],p:n.f[1],st:""},l:{vap:n.l[0],p:n.l[1],st:""},sec:n.sec,comp:n.comp[0],compP:n.comp[1],abs:n.abs[0],absP:n.abs[1],vv:n.vv,vb:n.vb,vn:n.vn});
@@ -303,7 +334,7 @@ async function tick(){
   }
   $("updating").classList.remove("on");
 }
-showRef(); tick(); setInterval(tick,120000);
+showRef(); tick(); drawMap(); setInterval(tick,120000);
 </script>
 </body>
 </html>
