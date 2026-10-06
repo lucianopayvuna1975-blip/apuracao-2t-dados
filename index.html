@@ -256,11 +256,14 @@ function renderComp(uf2){
 }
 function renderProj(p,ms){
   const card=$("projCard");
-  if(lastMode!=="live"||p.sec<1){card.style.display="none";return;}
   card.style.display="block";
-  const k=100/Math.max(p.sec,0.01);
-  $("projBody").innerHTML=
-    `Com <b>${pf(p.sec)}%</b> das seções apuradas, mantido o ritmo atual a projeção para o resultado final é de <b style="color:#1d4ed8">${pf(p.f.p)}% para Flavio Bolsonaro</b> (~${nf.format(Math.round(p.f.vap*k))} votos) e <b style="color:#dc2626">${pf(p.l.p)}% para Lula</b> (~${nf.format(Math.round(p.l.vap*k))} votos).`;
+  if(lastMode!=="live"||p.sec<1){
+    $("projBody").innerHTML=`As projeções do resultado final começam quando a apuração do <b>2º turno</b> atingir os primeiros 10%. Os marcos serão registrados automaticamente a cada 10% da apuração.`;
+  }else{
+    const k=100/Math.max(p.sec,0.01);
+    $("projBody").innerHTML=
+      `Com <b>${pf(p.sec)}%</b> das seções apuradas, mantido o ritmo atual a projeção para o resultado final é de <b style="color:#1d4ed8">${pf(p.f.p)}% para Flavio Bolsonaro</b> (~${nf.format(Math.round(p.f.vap*k))} votos) e <b style="color:#dc2626">${pf(p.l.p)}% para Lula</b> (~${nf.format(Math.round(p.l.vap*k))} votos).`;
+  }
   const tb=$("msTable").querySelector("tbody"); tb.innerHTML="";
   const byM={}; (ms||[]).forEach(e=>{byM[e.milestone]=e;});
   for(let m=10;m<=100;m+=10){
