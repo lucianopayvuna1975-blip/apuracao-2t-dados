@@ -163,16 +163,6 @@ footer b{color:var(--ink)}
     <div class="sync" id="syncLine">Sincronizando…</div>
   </div>
 
-  <div class="card" id="countCard" style="display:none">
-    <div class="plain">Faltam para o início da apuração do 2º turno (25/10 às 17h de Brasília)</div>
-    <div id="countdown">
-      <div class="cd"><b id="cdD">–</b><span>dias</span></div>
-      <div class="cd"><b id="cdH">–</b><span>horas</span></div>
-      <div class="cd"><b id="cdM">–</b><span>min</span></div>
-      <div class="cd"><b id="cdS">–</b><span>seg</span></div>
-    </div>
-    <div class="plain" style="margin-top:8px">Enquanto isso, abaixo o resultado do <b>1º turno como referência</b>.</div>
-  </div>
 
   <div class="cands" id="cands"></div>
 
@@ -284,15 +274,6 @@ footer b{color:var(--ink)}
     <div id="cidUFs" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0"></div>
     <div id="cidList" style="margin-top:6px"><p style="color:#64748b;text-align:center">Toque num estado acima para ver as cidades onde o candidato venceu no 1º turno.</p></div>
     <div class="note">Percentual sobre votos válidos do município. Dados oficiais do TSE — 1º turno de 04/10/2026, totalizado.</div>
-  </div>
-  <div class="proj" id="projCard" style="display:none">
-    <span class="tag">PROJEÇÃO · ESTIMATIVA NÃO OFICIAL</span>
-    <div id="projBody" style="font-size:14px"></div>
-    <div style="overflow-x:auto;margin-top:12px"><table id="msTable">
-      <thead><tr><th>Apuração em</th><th>Flavio proj.</th><th>Lula proj.</th></tr></thead>
-      <tbody></tbody>
-    </table></div>
-    <div class="note">A cada 10% da apuração, registra-se aqui a projeção do resultado final mantido o ritmo daquele momento. Estimativa preliminar — não é dado oficial do TSE e pode variar até a totalização.</div>
   </div>
 
   <footer>
@@ -406,7 +387,7 @@ function renderComp(uf2){
   }
 }
 function renderProj(p,ms,sfx){
-  const card=$("projCard"+sfx);
+  const card=$("projCard"+sfx); if(!card) return;
   card.style.display="block";
   if(lastMode!=="live"||p.sec<1){
     $("projBody"+sfx).innerHTML=`As projeções do resultado final começam quando a apuração do <b>2º turno</b> atingir os primeiros 10%. Os marcos serão registrados automaticamente a cada 10% da apuração.`;
