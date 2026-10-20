@@ -487,14 +487,14 @@ function paintZeros2(){
 
 /* ===== grafico de evolucao do 2o turno ===== */
 let evoSeries=[];
-try{ evoSeries=JSON.parse(localStorage.getItem("evo2t2026")||"[]"); }catch(e){ evoSeries=[]; }
+try{ evoSeries=JSON.parse(localStorage.getItem("evo2t2026v2")||"[]"); }catch(e){ evoSeries=[]; }
 function pushPoint(br){
   const t=(br.ht||"").slice(0,5); if(!/^\d{2}:\d{2}$/.test(t)) return;
   const pt={t:t, f:+br.f.p.toFixed(2), l:+br.l.p.toFixed(2)};
   const ix=evoSeries.findIndex(x=>x.t===t);
   if(ix>=0) evoSeries[ix]=pt; else evoSeries.push(pt);
   evoSeries.sort((a,b)=>a.t<b.t?-1:1);
-  try{ localStorage.setItem("evo2t2026", JSON.stringify(evoSeries)); }catch(e){}
+  try{ localStorage.setItem("evo2t2026v2", JSON.stringify(evoSeries)); }catch(e){}
 }
 async function seedEvo(){
   try{
@@ -546,6 +546,10 @@ async function tick(){
     const st=await fetch("dados/status.json?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();});
     if(st.turno===2){
       const br=parseTSE(await fetch("dados/br.json?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();}));
+      const dp=(br.dt||"").split("/");
+      const dataArq = dp.length===3 ? new Date(+dp[2], +dp[1]-1, +dp[0]) : null;
+      if(!dataArq || dataArq < new Date(2026,9,25)){ showRef(); paintZeros2(); }
+      else{
       const ufs=await fetchUFs();
       let ms=[]; try{ ms=await fetch("dados/milestones.json?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();}); }catch(e){}
       renderCands(br,"2"); renderUFs(ufs,"2"); renderProj(br,ms,"2"); renderProj(br,ms,"");
@@ -555,6 +559,7 @@ async function tick(){
       setSync(`Apuração do TSE de <b>${br.dt} às ${br.ht}</b> (Brasília) · página sincronizada às ${agora}`,"2");
       pushPoint(br); drawChart();
       lastGood={br,ufs};
+      }
     }else{ showRef(); paintZeros2(); }
   }catch(e){
     if(lastGood){const{br,ufs}=lastGood;renderCands(br,"2");renderUFs(ufs,"2");renderComp(ufs);setBadge("live","2");}
