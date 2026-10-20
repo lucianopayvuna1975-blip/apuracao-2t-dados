@@ -81,6 +81,7 @@ footer b{color:var(--ink)}
 .tabs{display:flex;gap:8px;margin-bottom:14px}
 .tabbtn{flex:1;padding:12px 8px;border-radius:12px;border:2px solid #cbd5e1;background:#fff;color:var(--ink);font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s}
 .tabbtn.on{background:#0b1e3a;color:#fff;border-color:#0b1e3a}
+@media(max-width:560px){.tabbtn{font-size:13px;padding:10px 4px}}
 </style>
 </head>
 <body>
@@ -90,10 +91,73 @@ footer b{color:var(--ink)}
 </header>
 <main>
   <div class="tabs">
-    <button class="tabbtn on" id="tabBtnDash" onclick="showTab('dash')">📊 Dashboard</button>
+    <button class="tabbtn on" id="tabBtn2T" onclick="showTab('2t')">📊 Dashboard 2º Turno</button>
+    <button class="tabbtn" id="tabBtnDash" onclick="showTab('dash')">📋 Dashboard 1º Turno</button>
     <button class="tabbtn" id="tabBtnPesq" onclick="showTab('pesq')">🗳️ Pesquisas Eleitorais</button>
   </div>
-  <div id="panelDash">
+  <div id="panel2T">
+  <div class="topbar">
+    <div id="modeBadge2"><span class="badge wait">2º TURNO · APURAÇÃO TSE 25/10</span></div>
+    <div class="sync" id="syncLine2">Apuração do TSE · 25/10/2026 às 17h (Brasília) — aguardando o início</div>
+  </div>
+
+  <div class="card" id="countCard2" style="display:none">
+    <div class="plain">Faltam para o início da apuração do 2º turno (25/10 às 17h de Brasília)</div>
+    <div id="countdown">
+      <div class="cd"><b id="cd2D">–</b><span>dias</span></div>
+      <div class="cd"><b id="cd2H">–</b><span>horas</span></div>
+      <div class="cd"><b id="cd2M">–</b><span>min</span></div>
+      <div class="cd"><b id="cd2S">–</b><span>seg</span></div>
+    </div>
+    <div class="plain" style="margin-top:8px">Os números abaixo começam <b>zerados</b> e passam a ser atualizados ao vivo com os dados do TSE assim que a apuração começar.</div>
+  </div>
+
+  <div class="cands" id="cands2"></div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="bigsec"><div class="n" id="secPct2">0,00%</div><div class="t">das seções totalizadas</div></div>
+  </div>
+
+  <div class="card">
+    <h2 class="sec">Evolução da apuração — votos válidos por hora</h2>
+    <div id="chart2"></div>
+    <div class="leg"><span><i style="background:var(--blue)"></i>Flavio Bolsonaro</span><span><i style="background:var(--red)"></i>Lula</span></div>
+    <div class="note">Cada ponto é o percentual de votos válidos no momento da atualização do TSE. O gráfico vai sendo desenhado ao longo da apuração de 25/10: a linha sobe ou desce conforme o percentual de cada candidato muda.</div>
+  </div>
+
+  <div class="card">
+    <h2 class="sec">Resumo da votação</h2>
+    <div class="stats" id="resumo2"></div>
+  </div>
+
+  <div class="card">
+    <h2 class="sec">Liderança nas UFs</h2>
+    <div class="donut-wrap">
+      <svg id="donut2" width="150" height="150" viewBox="0 0 150 150"></svg>
+      <div class="donut-c" id="donutLegend2"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="sec">Resultado por estado</h2>
+    <div style="overflow-x:auto"><table id="ufTable2">
+      <thead><tr><th>UF</th><th>Flavio %</th><th>Lula %</th><th>Seções %</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <div class="leg"><span><i style="background:var(--blue)"></i>sigla azul = Flavio lidera</span><span><i style="background:var(--red)"></i>sigla vermelha = Lula lidera</span></div>
+  </div>
+
+  <div class="proj" id="projCard2" style="display:none">
+    <span class="tag">PROJEÇÃO · ESTIMATIVA NÃO OFICIAL</span>
+    <div id="projBody2" style="font-size:14px"></div>
+    <div style="overflow-x:auto;margin-top:12px"><table id="msTable2">
+      <thead><tr><th>Apuração em</th><th>Flavio proj.</th><th>Lula proj.</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <div class="note">A cada 10% da apuração, registra-se aqui a projeção do resultado final mantido o ritmo daquele momento. Estimativa preliminar — não é dado oficial do TSE e pode variar até a totalização.</div>
+  </div>
+  </div>
+  <div id="panelDash" style="display:none">
   <div class="topbar">
     <div id="modeBadge"><span class="badge wait">CARREGANDO…</span></div>
     <div class="sync" id="syncLine">Sincronizando…</div>
@@ -167,7 +231,7 @@ footer b{color:var(--ink)}
 
 
 </div>
-  <div id="panelDash2">
+  <div id="panelDash2" style="display:none">
   <div class="card">
     <h2 class="sec">Resumo da votação</h2>
     <div class="stats" id="resumo"></div>
@@ -267,19 +331,22 @@ let lastMode = "ref";
 /* ===== countdown ===== */
 function tickCountdown(){
   const diff = ELECTION_TS - Date.now();
-  if(diff<=0){$("countCard").style.display="none";return;}
-  $("countCard").style.display="block";
-  const s=Math.floor(diff/1000);
-  $("cdD").textContent=Math.floor(s/86400);
-  $("cdH").textContent=String(Math.floor(s%86400/3600)).padStart(2,"0");
-  $("cdM").textContent=String(Math.floor(s%3600/60)).padStart(2,"0");
-  $("cdS").textContent=String(s%60).padStart(2,"0");
+  for(const sx of ["","2"]){
+    const card=$("countCard"+sx); if(!card) continue;
+    if(diff<=0){card.style.display="none";continue;}
+    card.style.display="block";
+    const s=Math.floor(diff/1000);
+    $("cd"+sx+"D").textContent=Math.floor(s/86400);
+    $("cd"+sx+"H").textContent=String(Math.floor(s%86400/3600)).padStart(2,"0");
+    $("cd"+sx+"M").textContent=String(Math.floor(s%3600/60)).padStart(2,"0");
+    $("cd"+sx+"S").textContent=String(s%60).padStart(2,"0");
+  }
 }
 setInterval(tickCountdown,1000); tickCountdown();
 
 /* ===== render ===== */
-function renderCands(p, live){
-  const el=$("cands");
+function renderCands(p, sfx){
+  const el=$("cands"+sfx);
   const eleitoF=/eleito/i.test(p.f.st)&&!/não/i.test(p.f.st);
   const eleitoL=/eleito/i.test(p.l.st)&&!/não/i.test(p.l.st);
   const tot=p.f.p+p.l.p||1;
@@ -292,28 +359,28 @@ function renderCands(p, live){
       <div class="nm">Lula</div><div class="pp">13 · PT</div>
       <div class="vt">${nf.format(p.l.vap)}</div><div class="pc">${pf(p.l.p)}% dos votos válidos</div>
       <div class="bar"><i style="width:${(p.l.p/tot*100).toFixed(1)}%"></i></div></div>`;
-  $("secPct").textContent=pf(p.sec)+"%";
-  $("resumo").innerHTML=`
+  $("secPct"+sfx).textContent=pf(p.sec)+"%";
+  $("resumo"+sfx).innerHTML=`
     <div class="stat"><div class="k">Comparecimento</div><div class="v">${nf.format(p.comp)}</div><div class="k">${p.compP}% do eleitorado</div></div>
     <div class="stat"><div class="k">Abstenção</div><div class="v">${nf.format(p.abs)}</div><div class="k">${p.absP}% do eleitorado</div></div>
     <div class="stat"><div class="k">Votos válidos</div><div class="v">${nf.format(p.vv)}</div></div>
     <div class="stat"><div class="k">Brancos</div><div class="v">${nf.format(p.vb)}</div></div>
     <div class="stat"><div class="k">Nulos</div><div class="v">${nf.format(p.vn)}</div></div>`;
 }
-function donut(fl,lu){
+function donut(fl,lu,sfx){
   const tot=fl+lu||1, r=54, c=2*Math.PI*r, off=c*(lu/tot);
-  $("donut").innerHTML=`
+  $("donut"+sfx).innerHTML=`
     <circle cx="75" cy="75" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="22"/>
     <circle cx="75" cy="75" r="${r}" fill="none" stroke="#1d4ed8" stroke-width="22"
       stroke-dasharray="${(c-off).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 75 75)" stroke-linecap="butt"/>
     <text x="75" y="72" text-anchor="middle" font-size="22" font-weight="800" fill="#0f172a">${fl}×${lu}</text>
     <text x="75" y="92" text-anchor="middle" font-size="10" fill="#64748b">UFs</text>`;
-  $("donutLegend").innerHTML=`
+  $("donutLegend"+sfx).innerHTML=`
     <div><span style="color:#1d4ed8">■</span> <b>${fl}</b> UFs com Flavio na frente</div>
     <div><span style="color:#dc2626">■</span> <b>${lu}</b> UFs com Lula na frente</div>`;
 }
-function renderUFs(ufData){
-  let fl=0; const tb=$("ufTable").querySelector("tbody"); tb.innerHTML="";
+function renderUFs(ufData,sfx){
+  let fl=0; const tb=$("ufTable"+sfx).querySelector("tbody"); tb.innerHTML="";
   for(const uf of UFS){
     const u=ufData[uf]; if(!u)continue;
     const fw=u.f[1]>u.l[1]; if(fw)fl++;
@@ -324,7 +391,7 @@ function renderUFs(ufData){
       <td>${pf(u.sec,1)}%</td>`;
     tb.appendChild(tr);
   }
-  donut(fl, UFS.length-fl);
+  donut(fl, UFS.length-fl, sfx);
   return {fl, lu:UFS.length-fl};
 }
 function renderComp(uf2){
@@ -338,17 +405,17 @@ function renderComp(uf2){
     tb.appendChild(tr);
   }
 }
-function renderProj(p,ms){
-  const card=$("projCard");
+function renderProj(p,ms,sfx){
+  const card=$("projCard"+sfx);
   card.style.display="block";
   if(lastMode!=="live"||p.sec<1){
-    $("projBody").innerHTML=`As projeções do resultado final começam quando a apuração do <b>2º turno</b> atingir os primeiros 10%. Os marcos serão registrados automaticamente a cada 10% da apuração.`;
+    $("projBody"+sfx).innerHTML=`As projeções do resultado final começam quando a apuração do <b>2º turno</b> atingir os primeiros 10%. Os marcos serão registrados automaticamente a cada 10% da apuração.`;
   }else{
     const k=100/Math.max(p.sec,0.01);
-    $("projBody").innerHTML=
+    $("projBody"+sfx).innerHTML=
       `Com <b>${pf(p.sec)}%</b> das seções apuradas, mantido o ritmo atual a projeção para o resultado final é de <b style="color:#1d4ed8">${pf(p.f.p)}% para Flavio Bolsonaro</b> (~${nf.format(Math.round(p.f.vap*k))} votos) e <b style="color:#dc2626">${pf(p.l.p)}% para Lula</b> (~${nf.format(Math.round(p.l.vap*k))} votos).`;
   }
-  const tb=$("msTable").querySelector("tbody"); tb.innerHTML="";
+  const tb=$("msTable"+sfx).querySelector("tbody"); tb.innerHTML="";
   const byM={}; (ms||[]).forEach(e=>{byM[e.milestone]=e;});
   for(let m=10;m<=100;m+=10){
     const e=byM[m], tr=document.createElement("tr");
@@ -358,13 +425,18 @@ function renderProj(p,ms){
     tb.appendChild(tr);
   }
 }
-function setBadge(mode, st){
+function setBadge(mode, sfx){
   lastMode=mode;
-  $("modeBadge").innerHTML = mode==="live"
+  $("modeBadge"+sfx).innerHTML = mode==="live"
     ? `<span class="badge live"><span class="dot"></span>AO VIVO · 2º TURNO</span>`
+    : mode==="wait2"
+    ? `<span class="badge wait">2º TURNO · APURAÇÃO TSE 25/10</span>`
     : `<span class="badge wait">2º TURNO EM 25/10 · <span class="ref-tag" style="margin:0">1º turno como referência</span></span>`;
 }
-function setSync(txt){$("syncLine").innerHTML=txt;$("footSync").textContent=txt.replace(/<[^>]+>/g,"");}
+function setSync(txt, sfx){
+  $("syncLine"+sfx).innerHTML=txt;
+  if(sfx==="") $("footSync").textContent=txt.replace(/<[^>]+>/g,"");
+}
 
 /* ===== mapa do Brasil (1º turno) ===== */
 async function drawMap(){
@@ -394,10 +466,10 @@ async function drawMap(){
 
 function showRef(){
   const n=REF1T.nat;
-  renderCands({f:{vap:n.f[0],p:n.f[1],st:""},l:{vap:n.l[0],p:n.l[1],st:""},sec:n.sec,comp:n.comp[0],compP:n.comp[1],abs:n.abs[0],absP:n.abs[1],vv:n.vv,vb:n.vb,vn:n.vn});
-  renderUFs(REF1T.uf); renderComp(null); renderProj({sec:0},[]);
-  setBadge("ref");
-  setSync(`Referência: 1º turno totalizado em <b>${n.dt} às ${n.ht}</b> (Brasília)`);
+  renderCands({f:{vap:n.f[0],p:n.f[1],st:""},l:{vap:n.l[0],p:n.l[1],st:""},sec:n.sec,comp:n.comp[0],compP:n.comp[1],abs:n.abs[0],absP:n.abs[1],vv:n.vv,vb:n.vb,vn:n.vn},"");
+  renderUFs(REF1T.uf,""); renderComp(null); renderProj({sec:0},[],"");
+  setBadge("ref","");
+  setSync(`Referência: 1º turno totalizado em <b>${n.dt} às ${n.ht}</b> (Brasília)`,"");
 }
 async function fetchUFs(){
   const out={}; const q=[...UFS];
@@ -414,6 +486,75 @@ async function fetchUFs(){
   return out;
 }
 let lastGood=null;
+
+/* ===== painel 2o turno: estado zerado ===== */
+function paintZeros2(){
+  renderCands({f:{vap:0,p:0,st:""},l:{vap:0,p:0,st:""},sec:0,comp:0,compP:"0,00",abs:0,absP:"0,00",vv:0,vb:0,vn:0},"2");
+  const tb=$("ufTable2").querySelector("tbody");
+  tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:#94a3b8">Aguardando o início da apuração — 25/10 às 17h (Brasília)</td></tr>';
+  $("donut2").innerHTML='<text x="75" y="80" text-anchor="middle" font-size="13" fill="#94a3b8">aguardando</text>';
+  $("donutLegend2").innerHTML='<div style="color:#94a3b8">A liderança por UF aparece quando a apuração começar.</div>';
+  $("projCard2").style.display="none";
+  setBadge("wait2","2");
+  setSync('Apuração do TSE · <b>25/10/2026 às 17h</b> (Brasília) — aguardando o início',"2");
+  drawChart();
+}
+
+/* ===== grafico de evolucao do 2o turno ===== */
+let evoSeries=[];
+try{ evoSeries=JSON.parse(localStorage.getItem("evo2t2026")||"[]"); }catch(e){ evoSeries=[]; }
+function pushPoint(br){
+  const t=(br.ht||"").slice(0,5); if(!/^\d{2}:\d{2}$/.test(t)) return;
+  const pt={t:t, f:+br.f.p.toFixed(2), l:+br.l.p.toFixed(2)};
+  const ix=evoSeries.findIndex(x=>x.t===t);
+  if(ix>=0) evoSeries[ix]=pt; else evoSeries.push(pt);
+  evoSeries.sort((a,b)=>a.t<b.t?-1:1);
+  try{ localStorage.setItem("evo2t2026", JSON.stringify(evoSeries)); }catch(e){}
+}
+async function seedEvo(){
+  try{
+    const r=await fetch("dados/evolucao.json?t="+Date.now(),{cache:"no-store"});
+    if(r.ok){ const arr=await r.json();
+      if(Array.isArray(arr)) for(const e of arr){ if(e&&/^\d{2}:\d{2}$/.test(e.t||"")&&typeof e.f==="number"&&typeof e.l==="number") pushPoint({ht:e.t+":00", f:{p:e.f}, l:{p:e.l}}); }
+    }
+  }catch(e){}
+  drawChart();
+}
+function drawChart(){
+  const box=$("chart2"); if(!box) return;
+  const W=660,H=250,PL=40,PR=54,PT=12,PB=24, iw=W-PL-PR, ih=H-PT-PB;
+  const pts=evoSeries;
+  if(!pts.length){
+    box.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto" role="img" aria-label="Grafico de evolucao da apuracao">'
+      +'<line x1="'+PL+'" y1="'+(PT+ih)+'" x2="'+(PL+iw)+'" y2="'+(PT+ih)+'" stroke="#cbd5e1" stroke-width="1"/>'
+      +'<text x="'+(PL+iw/2)+'" y="'+(PT+ih/2)+'" text-anchor="middle" font-size="14" fill="#94a3b8">O gráfico começa a ser desenhado quando a apuração iniciar</text>'
+      +'<text x="'+(PL+iw/2)+'" y="'+(PT+ih/2+20)+'" text-anchor="middle" font-size="12" fill="#94a3b8">25/10 às 17h (Brasília)</text></svg>';
+    return;
+  }
+  let lo=100, hi=0;
+  for(const p of pts){ lo=Math.min(lo,p.f,p.l); hi=Math.max(hi,p.f,p.l); }
+  lo=Math.max(0,Math.floor(lo-2)); hi=Math.min(100,Math.ceil(hi+2));
+  if(hi-lo<6){ hi=Math.min(100,hi+3); lo=Math.max(0,lo-3); }
+  const X=i=> PL + (pts.length===1 ? iw/2 : iw*i/(pts.length-1));
+  const Y=v=> PT + ih - (v-lo)/(hi-lo)*ih;
+  let g='';
+  for(let i=0;i<=4;i++){ const v=lo+(hi-lo)*i/4, y=Y(v);
+    g+='<line x1="'+PL+'" y1="'+y.toFixed(1)+'" x2="'+(PL+iw)+'" y2="'+y.toFixed(1)+'" stroke="#e2e8f0" stroke-width="1"/>'
+      +'<text x="'+(PL-5)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="10" fill="#64748b">'+pf(v,0)+'%</text>'; }
+  const line=k=> pts.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(p[k]).toFixed(1)).join(' ');
+  g+='<path d="'+line('f')+'" fill="none" stroke="#1d4ed8" stroke-width="2.5" stroke-linejoin="round"/>';
+  g+='<path d="'+line('l')+'" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linejoin="round"/>';
+  for(const pair of [['f','#1d4ed8'],['l','#dc2626']]){
+    const k=pair[0], color=pair[1];
+    pts.forEach((p,i)=>{ g+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p[k]).toFixed(1)+'" r="3" fill="'+color+'"/>'; });
+    const last=pts[pts.length-1];
+    g+='<text x="'+(PL+iw+6)+'" y="'+(Y(last[k])+4).toFixed(1)+'" font-size="12" font-weight="800" fill="'+color+'">'+pf(last[k])+'%</text>';
+  }
+  const idx=[0, Math.floor((pts.length-1)/2), pts.length-1].filter((v,i2,a)=>a.indexOf(v)===i2);
+  for(const i2 of idx){ g+='<text x="'+X(i2).toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="10" fill="#64748b">'+pts[i2].t+'</text>'; }
+  box.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto" role="img" aria-label="Grafico de evolucao da apuracao">'+g+'</svg>';
+}
+
 async function tick(){
   $("updating").classList.add("on");
   try{
@@ -422,16 +563,17 @@ async function tick(){
       const br=parseTSE(await fetch("dados/br.json?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();}));
       const ufs=await fetchUFs();
       let ms=[]; try{ ms=await fetch("dados/milestones.json?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();}); }catch(e){}
-      renderCands(br,true); renderUFs(ufs); renderComp(ufs); renderProj(br,ms);
-      setBadge("live",st);
+      renderCands(br,"2"); renderUFs(ufs,"2"); renderProj(br,ms,"2"); renderProj(br,ms,"");
+      renderComp(ufs);
+      setBadge("live","2");
       const agora=new Date().toLocaleString("pt-BR",{timeZone:"America/Sao_Paulo"});
-      setSync(`Apuração do TSE de <b>${br.dt} às ${br.ht}</b> (Brasília) · página sincronizada às ${agora}`);
+      setSync(`Apuração do TSE de <b>${br.dt} às ${br.ht}</b> (Brasília) · página sincronizada às ${agora}`,"2");
+      pushPoint(br); drawChart();
       lastGood={br,ufs};
-    }else{ showRef(); }
+    }else{ showRef(); paintZeros2(); }
   }catch(e){
-    if(lastGood){const{br,ufs}=lastGood;renderCands(br,true);renderUFs(ufs);renderComp(ufs);renderProj(br,[]);setBadge("live");}
-    else showRef();
-    setSync($("syncLine").textContent+" · <i>(falha ao buscar dados novos — mantidos os últimos)</i>");
+    if(lastGood){const{br,ufs}=lastGood;renderCands(br,"2");renderUFs(ufs,"2");renderComp(ufs);setBadge("live","2");}
+    else{ showRef(); paintZeros2(); }
   }
   $("updating").classList.remove("on");
 }
@@ -468,19 +610,22 @@ async function loadCid(){
     box.innerHTML=h;
   }catch(e){ box.innerHTML='<p style="color:#b91c1c;text-align:center">Não foi possível carregar as cidades deste estado.</p>'; }
 }
-showRef(); tick(); drawMap(); setInterval(tick,120000);
+showRef(); paintZeros2(); tick(); drawMap(); seedEvo(); setInterval(tick,120000);
 </script>
 <script>
 function showTab(t){
-  var dash = (t === 'dash');
-  document.getElementById('panelDash').style.display = dash ? '' : 'none';
-  document.getElementById('panelDash2').style.display = dash ? '' : 'none';
-  document.getElementById('panelPesq').style.display = dash ? 'none' : '';
-  document.getElementById('tabBtnDash').classList.toggle('on', dash);
-  document.getElementById('tabBtnPesq').classList.toggle('on', !dash);
+  var is2t = (t === '2t'), isDash = (t === 'dash'), isPesq = (t === 'pesq');
+  document.getElementById('panel2T').style.display = is2t ? '' : 'none';
+  document.getElementById('panelDash').style.display = isDash ? '' : 'none';
+  document.getElementById('panelDash2').style.display = isDash ? '' : 'none';
+  document.getElementById('panelPesq').style.display = isPesq ? '' : 'none';
+  document.getElementById('tabBtn2T').classList.toggle('on', is2t);
+  document.getElementById('tabBtnDash').classList.toggle('on', isDash);
+  document.getElementById('tabBtnPesq').classList.toggle('on', isPesq);
   window.scrollTo({top:0, behavior:'smooth'});
 }
 if (location.hash === '#pesquisas') showTab('pesq');
+else if (location.hash === '#primeiro-turno') showTab('dash');
 </script>
 </body>
 </html>
