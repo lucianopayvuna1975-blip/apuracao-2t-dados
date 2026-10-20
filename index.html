@@ -78,6 +78,9 @@ footer b{color:var(--ink)}
 .ufBtn{cursor:pointer;border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:6px 0;min-width:52px;text-align:center;font-weight:700;font-size:14px}
 .ufBtn.on{background:#0f172a;color:#fff;border-color:#0f172a}
 .cidRow{display:flex;justify-content:space-between;padding:7px 4px;border-bottom:1px solid #f1f5f9;font-size:14px}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tabbtn{flex:1;padding:12px 8px;border-radius:12px;border:2px solid #cbd5e1;background:#fff;color:var(--ink);font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s}
+.tabbtn.on{background:#0b1e3a;color:#fff;border-color:#0b1e3a}
 </style>
 </head>
 <body>
@@ -86,6 +89,11 @@ footer b{color:var(--ink)}
   <div><h1>Apuração — 2º Turno | Presidente 2026</h1><p>Flavio Bolsonaro × Lula · dados oficiais do TSE</p></div>
 </header>
 <main>
+  <div class="tabs">
+    <button class="tabbtn on" id="tabBtnDash" onclick="showTab('dash')">📊 Dashboard</button>
+    <button class="tabbtn" id="tabBtnPesq" onclick="showTab('pesq')">🗳️ Pesquisas Eleitorais</button>
+  </div>
+  <div id="panelDash">
   <div class="topbar">
     <div id="modeBadge"><span class="badge wait">CARREGANDO…</span></div>
     <div class="sync" id="syncLine">Sincronizando…</div>
@@ -108,6 +116,8 @@ footer b{color:var(--ink)}
     <div class="bigsec"><div class="n" id="secPct">–</div><div class="t">das seções totalizadas</div></div>
   </div>
 
+</div>
+  <div id="panelPesq" style="display:none">
   <div class="card">
     <h2 class="sec">Pesquisas — 2º turno</h2>
     <div style="overflow-x:auto"><table id="pollTable">
@@ -156,6 +166,8 @@ footer b{color:var(--ink)}
   </div>
 
 
+</div>
+  <div id="panelDash2">
   <div class="card">
     <h2 class="sec">Resumo da votação</h2>
     <div class="stats" id="resumo"></div>
@@ -223,6 +235,7 @@ footer b{color:var(--ink)}
     <b>Dados oficiais do TSE</b> — resultados.tse.jus.br<br>
     Página atualizada automaticamente a cada 2 minutos · <span id="footSync">–</span>
   </footer>
+</div>
 </main>
 <div id="updating">⟳ atualizando…</div>
 <script>
@@ -456,6 +469,18 @@ async function loadCid(){
   }catch(e){ box.innerHTML='<p style="color:#b91c1c;text-align:center">Não foi possível carregar as cidades deste estado.</p>'; }
 }
 showRef(); tick(); drawMap(); setInterval(tick,120000);
+</script>
+<script>
+function showTab(t){
+  var dash = (t === 'dash');
+  document.getElementById('panelDash').style.display = dash ? '' : 'none';
+  document.getElementById('panelDash2').style.display = dash ? '' : 'none';
+  document.getElementById('panelPesq').style.display = dash ? 'none' : '';
+  document.getElementById('tabBtnDash').classList.toggle('on', dash);
+  document.getElementById('tabBtnPesq').classList.toggle('on', !dash);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+if (location.hash === '#pesquisas') showTab('pesq');
 </script>
 </body>
 </html>
