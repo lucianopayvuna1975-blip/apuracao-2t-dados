@@ -82,6 +82,9 @@ footer b{color:var(--ink)}
 .tabbtn{flex:1;padding:12px 8px;border-radius:12px;border:2px solid #cbd5e1;background:#fff;color:var(--ink);font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s}
 .tabbtn.on{background:#0b1e3a;color:#fff;border-color:#0b1e3a}
 @media(max-width:560px){.tabbtn{font-size:13px;padding:10px 4px}}
+.chead{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.cfoto{width:58px;height:58px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.65);flex:none;background:rgba(255,255,255,.2)}
+.chead .pp{margin-bottom:0}
 </style>
 </head>
 <body>
@@ -330,18 +333,21 @@ function tickCountdown(){
 setInterval(tickCountdown,1000); tickCountdown();
 
 /* ===== render ===== */
+let _fotoF=null,_fotoL=null;
+function fotoCand(q){const i=document.querySelector(q);return i?(i.getAttribute("src")||""):"";}
 function renderCands(p, sfx){
+  if(_fotoF===null){_fotoF=fotoCand("#pickF img");_fotoL=fotoCand("#pickL img");}
   const el=$("cands"+sfx);
   const eleitoF=/eleito/i.test(p.f.st)&&!/não/i.test(p.f.st);
   const eleitoL=/eleito/i.test(p.l.st)&&!/não/i.test(p.l.st);
   const tot=p.f.p+p.l.p||1;
   el.innerHTML=`
     <div class="cand f">${eleitoF?'<span class="eleito">ELEITO</span>':""}
-      <div class="nm">Flavio Bolsonaro</div><div class="pp">22 · PL</div>
+      <div class="chead">${_fotoF?`<img class="cfoto" src="${_fotoF}" alt="Foto oficial de Flavio Bolsonaro (TSE)">`:""}<div><div class="nm">Flavio Bolsonaro</div><div class="pp">22 · PL</div></div></div>
       <div class="vt">${nf.format(p.f.vap)}</div><div class="pc">${pf(p.f.p)}% dos votos válidos</div>
       <div class="bar"><i style="width:${(p.f.p/tot*100).toFixed(1)}%"></i></div></div>
     <div class="cand l">${eleitoL?'<span class="eleito">ELEITO</span>':""}
-      <div class="nm">Lula</div><div class="pp">13 · PT</div>
+      <div class="chead">${_fotoL?`<img class="cfoto" src="${_fotoL}" alt="Foto oficial de Lula (TSE)">`:""}<div><div class="nm">Lula</div><div class="pp">13 · PT</div></div></div>
       <div class="vt">${nf.format(p.l.vap)}</div><div class="pc">${pf(p.l.p)}% dos votos válidos</div>
       <div class="bar"><i style="width:${(p.l.p/tot*100).toFixed(1)}%"></i></div></div>`;
   $("secPct"+sfx).textContent=pf(p.sec)+"%";
