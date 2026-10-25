@@ -115,6 +115,51 @@ footer b{color:var(--ink)}
     <div class="plain" style="margin-top:8px">Os números abaixo começam <b>zerados</b> e passam a ser atualizados ao vivo com os dados do TSE assim que a apuração começar.</div>
   </div>
 
+  <div class="cands" id="cands2"></div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="bigsec"><div class="n" id="secPct2">0,00%</div><div class="t">das seções totalizadas</div></div>
+  </div>
+
+  <div class="card">
+    <h2 class="sec">Evolução da apuração — votos válidos por hora</h2>
+    <div id="chart2"></div>
+    <div class="leg"><span><i style="background:var(--blue)"></i>Flavio Bolsonaro</span><span><i style="background:var(--red)"></i>Lula</span></div>
+    <div class="note">Cada ponto é o percentual de votos válidos no momento da atualização do TSE. O gráfico vai sendo desenhado ao longo da apuração de 25/10: a linha sobe ou desce conforme o percentual de cada candidato muda.</div>
+  </div>
+
+  <div class="card">
+    <h2 class="sec">Resumo da votação</h2>
+    <div class="stats" id="resumo2"></div>
+  </div>
+
+  <div class="card">
+    <h2 class="sec">Liderança nas UFs</h2>
+    <div class="donut-wrap">
+      <svg id="donut2" width="150" height="150" viewBox="0 0 150 150"></svg>
+      <div class="donut-c" id="donutLegend2"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="sec">Resultado por estado</h2>
+    <div style="overflow-x:auto"><table id="ufTable2">
+      <thead><tr><th>UF</th><th>Flavio %</th><th>Lula %</th><th>Seções %</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <div class="leg"><span><i style="background:var(--blue)"></i>sigla azul = Flavio lidera</span><span><i style="background:var(--red)"></i>sigla vermelha = Lula lidera</span></div>
+  </div>
+
+  <div class="proj" id="projCard2" style="display:none">
+    <span class="tag">PROJEÇÃO · ESTIMATIVA NÃO OFICIAL</span>
+    <div id="projBody2" style="font-size:14px"></div>
+    <div style="overflow-x:auto;margin-top:12px"><table id="msTable2">
+      <thead><tr><th>Apuração em</th><th>Flavio proj.</th><th>Lula proj.</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <div class="note">A cada 10% da apuração, registra-se aqui a projeção do resultado final mantido o ritmo daquele momento. Estimativa preliminar — não é dado oficial do TSE e pode variar até a totalização.</div>
+  </div>
+
   <div class="card">
     <h2 class="sec">🌏 Boletins de urna — exterior</h2>
     <p class="sync">As seções no exterior fecham às 17h no horário local de cada país — por isso os primeiros boletins saem ainda na madrugada do Brasil. São resultados parciais, conforme os boletins públicos vão sendo divulgados; a totalização oficial do TSE começa às 17h (Brasília).</p>
@@ -196,51 +241,6 @@ footer b{color:var(--ink)}
       </tbody>
     </table></div>
     <p class="sync">Nenhum país virou de lado entre os turnos. Austrália no 1º turno: parcial de 26 das 29 seções divulgadas.</p>
-  </div>
-
-  <div class="cands" id="cands2"></div>
-
-  <div class="card" style="margin-top:14px">
-    <div class="bigsec"><div class="n" id="secPct2">0,00%</div><div class="t">das seções totalizadas</div></div>
-  </div>
-
-  <div class="card">
-    <h2 class="sec">Evolução da apuração — votos válidos por hora</h2>
-    <div id="chart2"></div>
-    <div class="leg"><span><i style="background:var(--blue)"></i>Flavio Bolsonaro</span><span><i style="background:var(--red)"></i>Lula</span></div>
-    <div class="note">Cada ponto é o percentual de votos válidos no momento da atualização do TSE. O gráfico vai sendo desenhado ao longo da apuração de 25/10: a linha sobe ou desce conforme o percentual de cada candidato muda.</div>
-  </div>
-
-  <div class="card">
-    <h2 class="sec">Resumo da votação</h2>
-    <div class="stats" id="resumo2"></div>
-  </div>
-
-  <div class="card">
-    <h2 class="sec">Liderança nas UFs</h2>
-    <div class="donut-wrap">
-      <svg id="donut2" width="150" height="150" viewBox="0 0 150 150"></svg>
-      <div class="donut-c" id="donutLegend2"></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2 class="sec">Resultado por estado</h2>
-    <div style="overflow-x:auto"><table id="ufTable2">
-      <thead><tr><th>UF</th><th>Flavio %</th><th>Lula %</th><th>Seções %</th></tr></thead>
-      <tbody></tbody>
-    </table></div>
-    <div class="leg"><span><i style="background:var(--blue)"></i>sigla azul = Flavio lidera</span><span><i style="background:var(--red)"></i>sigla vermelha = Lula lidera</span></div>
-  </div>
-
-  <div class="proj" id="projCard2" style="display:none">
-    <span class="tag">PROJEÇÃO · ESTIMATIVA NÃO OFICIAL</span>
-    <div id="projBody2" style="font-size:14px"></div>
-    <div style="overflow-x:auto;margin-top:12px"><table id="msTable2">
-      <thead><tr><th>Apuração em</th><th>Flavio proj.</th><th>Lula proj.</th></tr></thead>
-      <tbody></tbody>
-    </table></div>
-    <div class="note">A cada 10% da apuração, registra-se aqui a projeção do resultado final mantido o ritmo daquele momento. Estimativa preliminar — não é dado oficial do TSE e pode variar até a totalização.</div>
   </div>
   </div>
   <div id="panelDash" style="display:none">
