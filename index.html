@@ -575,14 +575,32 @@ function showRef(){
   setBadge("ref","");
   setSync(`Referência: 1º turno totalizado em <b>${n.dt} às ${n.ht}</b> (Brasília)`,"");
 }
+/* ===== fonte rápida: TSE direto no navegador; se falhar, volta pros dados publicados ===== */
+let TSE_ELE="6258";
+function tseUrl(kind,uf){
+  const pad="e"+String(TSE_ELE).padStart(6,"0");
+  if(kind==="br") return "https://resultados.tse.jus.br/oficial/ele2026/"+TSE_ELE+"/dados/br/br-c0001-"+pad+"-u.json";
+  return "https://resultados.tse.jus.br/oficial/ele2026/"+TSE_ELE+"/dados/"+uf+"/"+uf+"-c0001-"+pad+"-u.json";
+}
+async function fetchDados(kind,uf){
+  try{
+    const r=await fetch(tseUrl(kind,uf)+"?t="+Date.now(),{cache:"no-store"});
+    if(!r.ok) throw 0;
+    return await r.json();
+  }catch(e){
+    const slow = kind==="br" ? "dados/br.json" : "dados/uf/"+uf+".json";
+    const r=await fetch(slow+"?t="+Date.now(),{cache:"no-store"});
+    if(!r.ok) throw 0;
+    return await r.json();
+  }
+}
 async function fetchUFs(){
   const out={}; const q=[...UFS];
   async function worker(){
     while(q.length){
       const uf=q.shift().toLowerCase();
       try{
-        const r=await fetch("dados/uf/"+uf+".json?t="+Date.now(),{cache:"no-store"});
-        if(r.ok)out[uf.toUpperCase()]=parseUF(await r.json());
+        out[uf.toUpperCase()]=parseUF(await fetchDados("uf",uf));
       }catch(e){}
     }
   }
@@ -664,7 +682,8 @@ async function tick(){
   try{
     const st=await fetch("dados/status.json?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();});
     if(st.turno===2){
-      const br=parseTSE(await fetch("dados/br.json?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();}));
+      if(st.eleicao) TSE_ELE=String(st.eleicao);
+      const br=parseTSE(await fetchDados("br"));
       const dp=(br.dt||"").split("/");
       const dataArq = dp.length===3 ? new Date(+dp[2], +dp[1]-1, +dp[0]) : null;
       if(!dataArq || dataArq < new Date(2026,9,25)){ showRef(); paintZeros2(); }
