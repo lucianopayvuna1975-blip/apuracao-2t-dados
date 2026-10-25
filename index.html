@@ -489,6 +489,7 @@ function renderUFs(ufData,sfx){
     const u=ufData[uf]; if(!u)continue;
     const fw=u.f[1]>u.l[1]; if(fw)fl++;
     const tr=document.createElement("tr");
+    if(sfx==="2" && u.sec>=99.99) tr.style.background = fw ? "#FFEC8B" : "#FBDCE5";
     tr.innerHTML=`<td><span class="uf ${fw?"b":"r"}">${uf}</span></td>
       <td style="color:#1d4ed8;font-weight:700">${pf(u.f[1])}%</td>
       <td style="color:#dc2626;font-weight:700">${pf(u.l[1])}%</td>
